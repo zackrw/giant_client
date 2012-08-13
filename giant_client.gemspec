@@ -1,7 +1,7 @@
 require File.expand_path('../lib/giant_client/version', __FILE__)
 
 Gem::Specification.new do |s|
-  s.name = "GiantClient"
+  s.name = "giant_client"
   s.version = GiantClient::VERSION
   s.authors = ["Zack Reneau-Wedeen", "Mat Brown"]
   s.email = "z.reneau.wedeen@gmail.com"
@@ -13,6 +13,8 @@ DESC
 
   s.files = Dir['lib/**/*.rb', 'spec/**/*.rb', 'README.md', 'LICENSE']
   s.has_rdoc = false
+  s.add_runtime_dependency 'patron'
+  s.add_runtime_dependency 'curb'
   s.add_development_dependency 'rspec'
   s.add_development_dependency 'webmock'
   s.add_development_dependency 'debugger'

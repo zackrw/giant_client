@@ -1,4 +1,8 @@
 require 'giant_client/net_http_adapter'
+require 'giant_client/patron_adapter'
+require 'giant_client/curb_adapter'
+require 'giant_client/excon_adapter'
+require 'giant_client/typhoeus_adapter'
 
 class GiantClient
   NotImplementedError = Class.new(StandardError)
@@ -23,15 +27,19 @@ class GiantClient
 
   def method_missing(method, *args)
 
-    args[0][:ssl] ||= @ssl
-    args[0][:host] ||= @host
-    args[0][:port] ||= @port
-    args[0][:path] ||= '/'
-    args[0][:query] ||= {}
-    args[0][:headers] ||= {}
-    args[0][:body] ||= ''
-
+    parse_opts(args[0])
     @client.__send__(method, *args)
+  end
+
+  private
+  def parse_opts(opts)
+    opts[:ssl] ||= @ssl
+    opts[:host] ||= @host
+    opts[:port] ||= @port
+    opts[:path] ||= '/'
+    opts[:query] ||= {}
+    opts[:headers] ||= {}
+    opts[:body] ||= ''
   end
 
 end

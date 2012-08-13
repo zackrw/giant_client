@@ -1,13 +1,15 @@
+require 'giant_client/gc_adapter'
+require 'giant_client/gc_response'
 require 'net/http'
 
 class GiantClient
-  class NetHttpAdapter
+  class NetHttpAdapter < GCAdapter
 
     def initialize
     end
 
     def request(method, opts)
-      if opts[:body] != '' && method == :get
+      if opts[:body] != '' && [:get, :delete, :head].include?(method)
         raise NotImplementedError
       end
       query = opts[:query]
@@ -34,29 +36,21 @@ class GiantClient
       unless method == :get
         request.body = opts[:body]
       end
-      http.start {|http| http.request(request)}
-      # returns the response
+      response = http.start {|http| http.request(request)}
 
+      # make response object
+
+      GCResponse.new(make_response_opts(response))
     end
-
-    def get(opts)
-      request(:get, opts)
-    end
-
-    def post(opts)
-      request(:post, opts)
-    end
-
-    def put(opts)
-      request(:put, opts)
-    end
-
-    def delete(opts)
-      request(:delete, opts)
-    end
-
-    def head(opts)
-      request(:head, opts)
+    def make_response_opts(response)
+      opts = {}
+      opts[:status_code] = response.code.to_i
+      opts[:headers] = {}
+      response.each_header do |header, value|
+        opts[:headers][header.capitalize] = value
+      end
+      opts[:body] = response.body
+      opts
     end
 
   end

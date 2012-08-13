@@ -1,1 +1,11 @@
+NECESSARY:
+add a response object that exposes a uniform api for each library's response
+
+NICE TO HAVE:
 add support for user-agent sessions
+add support for curl-multi for typhoeus and curb
+add support for extended connections with excon
+
+add support for more options like:
+  timeout
+

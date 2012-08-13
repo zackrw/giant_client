@@ -2,15 +2,48 @@ require File.expand_path( '../spec_helper', __FILE__ )
 
 describe 'GiantClient' do
 
-  describe 'NetHttpAdapter' do
+  shared_examples "an adapter" do
 
     context 'GET requests' do
-      let(:client) { GiantClient.new( :host => 'example.com', :adapter => GiantClient::NetHttpAdapter ) }
+      let(:client) { GiantClient.new( :host => 'example.com', :adapter => adapter ) }
 
       it 'should perform a simple GET request' do
         stub = stub_request(:get, 'example.com')
         client.get( :path => '/' )
         stub.should have_been_requested
+      end
+
+      it 'should respond with 200' do
+        stub = stub_request(:get, 'example.com')
+                      .to_return(:status => [200, 'OK'])
+        client.get( :path => '/' ).status_code.should == 200
+      end
+
+      it 'should respond with a success header' do
+        stub = stub_request(:get, 'example.com')
+                       .to_return(:headers => {'Success' => 'true'})
+        client.get( :path => '/' ).headers.should == {'Success' => 'true'}
+      end
+
+      it 'should respond with a multiple headers' do
+        stub = stub_request(:get, 'example.com')
+                       .to_return(:headers =>
+                                  {'Success' => 'true', 'doodle' => 'kaboodle'})
+        client.get( :path => '/' ).headers.should ==
+                                      {'Success' => 'true', 'Doodle' => 'kaboodle'}
+      end
+
+      it 'should respond with a header and status, and should capitalize status' do
+        stub = stub_request(:get, 'example.com')
+                       .to_return(:status => 1700, :headers => {'success' => 'true'})
+        client.get( :path => '/' ).headers.should == {'Success' => 'true'}
+        client.get( :path => '/' ).status_code.should == 1700
+      end
+
+      it 'should respond with a body' do
+        stub = stub_request(:get, 'example.com')
+                       .to_return(:body => 'Chucky Cheese')
+        client.get( :path => '/' ).body.should == 'Chucky Cheese'
       end
 
       it 'should pass on the port' do
@@ -43,7 +76,7 @@ describe 'GiantClient' do
       end
 
       context 'ssl' do
-        let(:client) { GiantClient.new( :host => 'example.com', :ssl => true, :adapter => GiantClient::NetHttpAdapter ) }
+        let(:client) { GiantClient.new( :host => 'example.com', :ssl => true, :adapter => adapter ) }
 
         it 'should perform a simple get request' do
           stub = stub_request(:get, 'https://example.com')
@@ -53,7 +86,7 @@ describe 'GiantClient' do
       end
 
       context 'custom port' do
-        let(:client) { GiantClient.new( :host => 'example.com', :ssl => true, :port => 8080, :adapter => GiantClient::NetHttpAdapter ) }
+        let(:client) { GiantClient.new( :host => 'example.com', :ssl => true, :port => 8080, :adapter => adapter ) }
 
         it 'should perform a simple GET request' do
           stub = stub_request(:get, 'https://example.com:8080')
@@ -64,7 +97,7 @@ describe 'GiantClient' do
     end
 
     context 'POST requests' do
-      let(:client) { GiantClient.new( :host => 'example.com', :adapter => GiantClient::NetHttpAdapter ) }
+      let(:client) { GiantClient.new( :host => 'example.com', :adapter => adapter ) }
 
       it 'should perform a simple POST request' do
         stub = stub_request(:post, 'example.com')
@@ -80,7 +113,7 @@ describe 'GiantClient' do
     end
 
     context 'PUT requests' do
-      let(:client) { GiantClient.new( :host => 'example.com', :adapter => GiantClient::NetHttpAdapter ) }
+      let(:client) { GiantClient.new( :host => 'example.com', :adapter => adapter ) }
 
       it 'should perform a simple PUT request' do
         stub = stub_request(:put, 'example.com')
@@ -102,7 +135,7 @@ describe 'GiantClient' do
     end
 
     context 'DELETE requests' do
-      let(:client) { GiantClient.new( :host => 'example.com', :adapter => GiantClient::NetHttpAdapter ) }
+      let(:client) { GiantClient.new( :host => 'example.com', :adapter => adapter ) }
 
       it 'should perform a simple DELETE request' do
         stub = stub_request(:delete, 'example.com')
@@ -116,15 +149,14 @@ describe 'GiantClient' do
         stub.should have_been_requested
       end
 
-      it 'can have a body for delete as well' do
+      it 'should raise an error if there is a request body' do
         stub = stub_request(:delete, 'example.com').with( :body => 'woohoo' )
-        client.delete( :path => '/', :body => 'woohoo' )
-        stub.should have_been_requested
+        expect{ client.delete( :path => '/', :body => 'woohoo' ) }.to raise_error( GiantClient::NotImplementedError )
       end
     end
 
     context 'HEAD requests' do
-      let(:client) { GiantClient.new( :host => 'example.com', :adapter => GiantClient::NetHttpAdapter ) }
+      let(:client) { GiantClient.new( :host => 'example.com', :adapter => adapter ) }
 
       it 'should perform a simple HEAD request' do
         stub = stub_request(:head, 'example.com')
@@ -138,13 +170,41 @@ describe 'GiantClient' do
         stub.should have_been_requested
       end
 
-      it 'can have a body for head as well' do
+      it 'should raise an error if there is a request body' do
         stub = stub_request(:head, 'example.com').with( :body => 'woohoo' )
-        client.head( :path => '/', :body => 'woohoo' )
-        stub.should have_been_requested
+        expect{ client.head( :path => '/', :body => 'woohoo' ) }.to raise_error( GiantClient::NotImplementedError )
       end
     end
+  end
 
+  describe 'NetHttpAdapter' do
+    it_behaves_like 'an adapter' do
+      let(:adapter){ GiantClient::NetHttpAdapter }
+    end
+  end
+
+  describe 'PatronAdapter' do
+    it_behaves_like 'an adapter' do
+      let(:adapter){ GiantClient::PatronAdapter }
+    end
+  end
+
+  describe 'Curb' do
+    it_behaves_like 'an adapter' do
+      let(:adapter){ GiantClient::CurbAdapter }
+    end
+  end
+
+  describe 'Excon' do
+    it_behaves_like 'an adapter' do
+      let(:adapter){ GiantClient::ExconAdapter }
+    end
+  end
+
+  describe 'Typhoeus' do
+    it_behaves_like 'an adapter' do
+      let(:adapter){ GiantClient::TyphoeusAdapter }
+    end
   end
 
 end
