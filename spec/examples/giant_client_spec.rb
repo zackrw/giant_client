@@ -13,6 +13,12 @@ describe 'GiantClient' do
         stub.should have_been_requested
       end
 
+      it 'should treat a string argument as a path' do
+        stub = stub_request(:get, 'example.com')
+        client.get( '/' )
+        stub.should have_been_requested
+      end
+
       it 'should respond with 200' do
         stub = stub_request(:get, 'example.com')
                       .to_return(:status => [200, 'OK'])

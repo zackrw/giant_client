@@ -7,7 +7,7 @@ require 'giant_client/typhoeus_adapter'
 class GiantClient
   NotImplementedError = Class.new(StandardError)
 
-  attr_accessor :host, :ssl
+  attr_accessor :host, :ssl, :port
   attr_reader :adapter
 
   def initialize(opts)
@@ -27,6 +27,10 @@ class GiantClient
 
   def method_missing(method, *args)
 
+    if args[0].is_a?(String)
+      path = args[0]
+      args[0] = { :path => path }
+    end
     parse_opts(args[0])
     @client.__send__(method, *args)
   end
