@@ -10,6 +10,7 @@ using a variety of http clients. Advantages of Giant Client:
 ## Installation
 
 *Note: not yet available*
+
 Add this line to your application's Gemfile:
 
     gem 'giant_client'
