@@ -1,49 +1,57 @@
-require 'giant_client/net_http_adapter'
-require 'giant_client/patron_adapter'
-require 'giant_client/curb_adapter'
-require 'giant_client/excon_adapter'
-require 'giant_client/typhoeus_adapter'
 
 class GiantClient
+  BodylessMethods = [:get, :delete, :head]
   NotImplementedError = Class.new(StandardError)
 
   attr_accessor :host, :ssl, :port
   attr_reader :adapter
 
   def initialize(opts)
-    @host = opts[:host] || ""
-    @ssl = opts[:ssl] || false
+    @host = opts[:host]
+    @ssl = !!opts[:ssl]
     default_port = @ssl ? 443 : 80
     @port = opts[:port] || default_port
 
-    @adapter = opts[:adapter] || NetHttpAdapter
+    @default_opts = {
+      :host => @host,
+      :ssl => @ssl,
+      :port => @port,
+      :path => '/',
+      :query => {},
+      :headers => {},
+      :body => ""
+    }
+
+    self.adapter = opts[:adapter] || :net_http
     @client = @adapter.new
+
   end
 
   def adapter=(new_adapter)
-    @adapter = new_adapter
+    require "giant_client/#{new_adapter}_adapter"
+    normalized = new_adapter.to_s.split('_').map(&:capitalize).join
+    @adapter = GiantClient.const_get("#{normalized}Adapter")
     @client = @adapter.new
   end
 
   def method_missing(method, *args)
 
-    if args[0].is_a?(String)
-      path = args[0]
-      args[0] = { :path => path }
+    if args.length > 2
+      raise ArgumentError, 'Wrong Number of Arguments (>2 for [1..2])';
     end
-    parse_opts(args[0])
-    @client.__send__(method, *args)
+
+    opts = Hash === args.last ? args.last : { :path => args.last }
+    if String === args.first
+      opts[:path] = args.first
+    end
+
+    opts = parse_opts(opts)
+    @client.__send__(method, opts)
   end
 
   private
   def parse_opts(opts)
-    opts[:ssl] ||= @ssl
-    opts[:host] ||= @host
-    opts[:port] ||= @port
-    opts[:path] ||= '/'
-    opts[:query] ||= {}
-    opts[:headers] ||= {}
-    opts[:body] ||= ''
+    @default_opts.merge(opts)
   end
 
 end

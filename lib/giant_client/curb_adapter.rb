@@ -1,51 +1,47 @@
-require 'giant_client/gc_adapter'
+require 'giant_client/abstract_adapter'
 require 'giant_client/gc_response'
 require 'curb'
 
 class GiantClient
-  class CurbAdapter < GCAdapter
-    def initialize
-    end
+  class CurbAdapter < AbstractAdapter
+    CRLF = /\r\n/
+    HeaderSplit = /:\s*/
 
     def request(method, opts)
-      method = method.upcase
 
-      if opts[:body] != '' && [:GET, :DELETE, :HEAD].include?(method)
-        raise NotImplementedError
+      if BodylessMethods.include?(method)
+        raise NotImplementedError unless opts[:body] == ''
       end
 
       url = url_from_opts(opts)
 
-      post_body, put_data = nil, nil
-
-      if method == :POST
+      if method == :post
         post_body = opts[:body]
-      elsif method == :PUT
+      elsif method == :put
         put_data = opts[:body]
       end
 
-      response = Curl.http( method, url, post_body, put_data ) do |curl|
+      response = Curl.http( method.upcase, url, post_body, put_data ) do |curl|
         curl.headers = opts[:headers]
       end
 
-      GCResponse.new(make_response_opts(response))
+      normalize_response(response)
     end
 
-    def make_response_opts(response)
-      opts = {}
-      opts[:status_code] = response.response_code
-      opts[:headers] = parse_out_headers(response.header_str)
-      opts[:body] = response.body_str
-      opts
+    def normalize_response(response)
+      status_code = response.response_code
+      headers = parse_out_headers(response.header_str)
+      body = response.body_str
+      GCResponse.new(status_code, headers, body)
     end
 
     def parse_out_headers(header_string)
       headers = {}
-      pairs = header_string.split(/\r\n/)
+      pairs = header_string.split(CRLF)
       pairs.shift
       pairs.each do |pair|
-        split_pair = pair.split(/\:\s*/)
-        headers[split_pair[0].capitalize] = split_pair[1]
+        header, value = *pair.split(HeaderSplit, 2)
+        headers[header] = value
       end
       headers
     end

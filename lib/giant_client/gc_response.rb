@@ -2,10 +2,10 @@ class GiantClient
   class GCResponse
     attr_accessor :body, :headers, :status_code
 
-    def initialize(opts)
-      @body = opts[:body] || ''
-      @headers = opts[:headers] || {}
-      @status_code = opts[:status_code] || '999'
+    def initialize(status_code, headers, body)
+      @status_code = status_code
+      @headers = headers
+      @body = body
     end
   end
 end

@@ -13,8 +13,10 @@ DESC
 
   s.files = Dir['lib/**/*.rb', 'spec/**/*.rb', 'README.md', 'LICENSE']
   s.has_rdoc = false
-  s.add_runtime_dependency 'patron'
-  s.add_runtime_dependency 'curb'
+  s.add_development_dependency 'curb'
+  s.add_development_dependency 'patron'
+  s.add_development_dependency 'typhoeus'
+  s.add_development_dependency 'excon'
   s.add_development_dependency 'rspec'
   s.add_development_dependency 'webmock'
   s.add_development_dependency 'debugger'

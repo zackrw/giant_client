@@ -1,16 +1,14 @@
-require 'giant_client/gc_adapter'
+require 'giant_client/abstract_adapter'
 require 'giant_client/gc_response'
 require 'typhoeus'
 
 class GiantClient
-  class TyphoeusAdapter < GCAdapter
-    def initialize
-    end
+  class TyphoeusAdapter < AbstractAdapter
 
     def request(method, opts)
 
-      if opts[:body] != '' && [:get, :delete, :head].include?(method)
-        raise NotImplementedError
+      if BodylessMethods.include?(method)
+        raise NotImplementedError unless opts[:body] == ''
       end
 
       url = url_from_opts(opts)
@@ -22,16 +20,15 @@ class GiantClient
 
       response = Typhoeus::Request.run(url, params)
 
-      GCResponse.new(make_response_opts(response))
+      normalize_response(response)
 
     end
 
-    def make_response_opts(response)
-      opts = {}
-      opts[:status_code] = response.code
-      opts[:headers] = response.headers_hash
-      opts[:body] = response.body
-      opts
+    def normalize_response(response)
+      status_code = response.code
+      headers = response.headers_hash
+      body = response.body
+      GCResponse.new(status_code, headers, body)
     end
 
   end

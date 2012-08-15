@@ -185,31 +185,31 @@ describe 'GiantClient' do
 
   describe 'NetHttpAdapter' do
     it_behaves_like 'an adapter' do
-      let(:adapter){ GiantClient::NetHttpAdapter }
+      let(:adapter){ :net_http }
     end
   end
 
   describe 'PatronAdapter' do
     it_behaves_like 'an adapter' do
-      let(:adapter){ GiantClient::PatronAdapter }
+      let(:adapter){ :patron }
     end
   end
 
   describe 'Curb' do
     it_behaves_like 'an adapter' do
-      let(:adapter){ GiantClient::CurbAdapter }
+      let(:adapter){ :curb }
     end
   end
 
   describe 'Excon' do
     it_behaves_like 'an adapter' do
-      let(:adapter){ GiantClient::ExconAdapter }
+      let(:adapter){ :excon }
     end
   end
 
   describe 'Typhoeus' do
     it_behaves_like 'an adapter' do
-      let(:adapter){ GiantClient::TyphoeusAdapter }
+      let(:adapter){ :typhoeus }
     end
   end
 

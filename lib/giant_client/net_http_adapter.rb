@@ -1,23 +1,15 @@
-require 'giant_client/gc_adapter'
+require 'giant_client/abstract_adapter'
 require 'giant_client/gc_response'
 require 'net/http'
 
 class GiantClient
-  class NetHttpAdapter < GCAdapter
-
-    def initialize
-    end
+  class NetHttpAdapter < AbstractAdapter
 
     def request(method, opts)
-      if opts[:body] != '' && [:get, :delete, :head].include?(method)
-        raise NotImplementedError
+      if BodylessMethods.include?(method)
+        raise NotImplementedError unless opts[:body] == ''
       end
-      query = opts[:query]
-      case query
-      when Hash
-        query = URI.encode_www_form(opts[:query])
-      end
-      query = "?#{query}" unless query == ''
+      query = encode_query(opts[:query])
 
       http = Net::HTTP.new( opts[:host], opts[:port] )
       http.use_ssl = opts[:ssl]
@@ -33,24 +25,24 @@ class GiantClient
 
       request = request_class.new( opts[:path] + query, opts[:headers] )
 
-      unless method == :get
+      if request.request_body_permitted?
         request.body = opts[:body]
       end
+
       response = http.start {|http| http.request(request)}
 
       # make response object
-
-      GCResponse.new(make_response_opts(response))
+      normalize_response(response)
     end
-    def make_response_opts(response)
-      opts = {}
-      opts[:status_code] = response.code.to_i
-      opts[:headers] = {}
+
+    def normalize_response(response)
+      status_code = response.code.to_i
+      headers = {}
       response.each_header do |header, value|
-        opts[:headers][header.capitalize] = value
+        headers[header.capitalize] = value
       end
-      opts[:body] = response.body
-      opts
+      body = response.body
+      GCResponse.new(status_code, headers, body)
     end
 
   end
