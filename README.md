@@ -9,6 +9,7 @@ using a variety of http clients. Advantages of Giant Client:
 
 ## Installation
 
+*Note: not yet available*
 Add this line to your application's Gemfile:
 
     gem 'giant_client'
@@ -19,7 +20,7 @@ And then execute:
 
 Or install it yourself as:
 
-    $ gem install .
+    $ gem install giant_client
 
 ## Usage
 *In this guide, I am very exhaustive with options, so it seems long winded, but this is just to show all configuration options, most are optional.*
@@ -30,18 +31,18 @@ Or install it yourself as:
       :ssl => true,                # optional, defaults to false
       :port => 443,                # optional, defaults to 443 when ssl == true,
                                    #                 and to 80 when ssl == false
-      :adapter => TyphoeusAdapter  # optional, defaults to NetHttpAdapter, options detailed below
+      :adapter => :typhoeus  # optional, defaults to :net_http, options detailed below
     }
 
     client = GiantClient.new(options)
 
 ####Adapters
 *There are currently five adapters supported. They use the libraries they are named after.*
-    NetHttpAdapter
-    PatronAdapter
-    ExconAdapter
-    CurbAdapter
-    TyphoeusAdapter
+    :net_http
+    :patron
+    :excon
+    :curb
+    :typhoeus
 
 ####The API
 Giant Client supports the HTTP 'GET', 'POST', 'PUT', 'DELETE', and 'HEAD' methods
@@ -59,7 +60,6 @@ Giant Client supports the HTTP 'GET', 'POST', 'PUT', 'DELETE', and 'HEAD' method
       :path => '/path/to/resource',                    # optional, defaults to '/'
       :headers => { 'Accepts' => 'application/json' }, # optional, defaults to {}
       :query => { 'post_id' => '29' }                  # optional, defaults to {}
-                                                       # query may be included as part of the path, but not as both a hash and part of the path.
     })
 ######POST
     client.post({
@@ -86,18 +86,18 @@ Giant Client supports the HTTP 'GET', 'POST', 'PUT', 'DELETE', and 'HEAD' method
 
 ####Return Value
 All of Giant Client's request methods return a uniform response object. This object has accessors for `status_code`, `headers`, and `body`
-In general, `status_code` is an integer, `headers` is a hash, and `body` is a string.
+In general, `status_code` is a number, `headers` is a Hash, and `body` is a String.
 ######Example
     response = client.request(:get, {
       :path => '/search?q=ahoy',
     })
-    puts response.status_code  # 200
-    puts response.headers      # {'Content-Type' => 'application/json' }
-    puts response.body         # 'ahoy matee'
+    puts response.status_code  # e.g. 200
+    puts response.headers      # e.g. {'Content-Type' => 'application/json' }
+    puts response.body         # e.g. 'ahoy matee'
 
 ######Giant Client provides getters and setters to default port, host, and ssl.
     # one request over http on port 80
-    g_client = GiantClient.new( :adapter => TyphoeusAdapter, :host => 'www.google.com' )
+    g_client = GiantClient.new( :adapter => :typhoeus, :host => 'www.google.com' )
     g_client.get(:path => '/')
 
     # the next on port 8080
@@ -110,6 +110,15 @@ In general, `status_code` is an integer, `headers` is a hash, and `body` is a st
 
 ######Passing a string as the options will set path = to that string and all other options to their defaults
     client.get('/') # same as :path => '/'
+
+######Passing a string and options will set path = to that string and all other options to those specified in the options
+    client.get('/', { :query => "foo=bar" }) # same as :path => '/', :query => "foo=bar"
+
+######The string argument takes precedence
+    client.get('/', {:path => '/this/does/not/matter'}) # same as :path => '/'
+
+######Passing more than 2 arguments or fewer than one argument will raise an ArgumentError
+    client.get('I', 'skipped', 'the', 'README') # ArgumentError
 
 ## Contributing
 

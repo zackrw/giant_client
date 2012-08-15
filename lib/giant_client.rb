@@ -36,7 +36,7 @@ class GiantClient
 
   def method_missing(method, *args)
 
-    if args.length > 2
+    unless args.length.between?(1, 2)
       raise ArgumentError, 'Wrong Number of Arguments (>2 for [1..2])';
     end
 
