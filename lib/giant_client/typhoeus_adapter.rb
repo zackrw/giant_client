@@ -7,7 +7,7 @@ class GiantClient
     def request(method, opts)
 
       if BODYLESS_METHODS.include?(method)
-        raise NotImplementedError unless opts[:body] == ''
+        raise GiantClient::Error::NotImplemented unless opts[:body] == ''
       end
 
       url = url_from_opts(opts)
@@ -22,7 +22,7 @@ class GiantClient
       response = Typhoeus::Request.run(url, params)
 
       if response.curl_return_code == 28 # timeout
-        raise TimeoutError, "the request timed out (timeout: #{opts[:timeout]}"
+        raise GiantClient::Error::Timeout, "the request timed out (timeout: #{opts[:timeout]}"
       end
 
       normalize_response(response)

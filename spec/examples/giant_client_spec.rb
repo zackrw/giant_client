@@ -78,7 +78,7 @@ describe 'GiantClient' do
 
       it 'should raise an error if there is a request body' do
         stub = stub_request(:get, 'example.com').with( :body => 'hey yo' )
-        expect{ client.get( :path => '/', :body => 'hey yo' ) }.to raise_error( GiantClient::NotImplementedError )
+        expect{ client.get( :path => '/', :body => 'hey yo' ) }.to raise_error( GiantClient::Error::NotImplemented )
       end
 
       context 'timing out' do
@@ -86,7 +86,7 @@ describe 'GiantClient' do
 
         it 'should raise a timeout error if there is a timeout' do
           stub = stub_request(:get, 'example.com').to_timeout
-          expect{ client.get( :path => '/' ) }.to raise_error( GiantClient::TimeoutError )
+          expect{ client.get( :path => '/' ) }.to raise_error( GiantClient::Error::Timeout )
         end
       end
 
@@ -166,7 +166,7 @@ describe 'GiantClient' do
 
       it 'should raise an error if there is a request body' do
         stub = stub_request(:delete, 'example.com').with( :body => 'woohoo' )
-        expect{ client.delete( :path => '/', :body => 'woohoo' ) }.to raise_error( GiantClient::NotImplementedError )
+        expect{ client.delete( :path => '/', :body => 'woohoo' ) }.to raise_error( GiantClient::Error::NotImplemented )
       end
     end
 
@@ -187,7 +187,7 @@ describe 'GiantClient' do
 
       it 'should raise an error if there is a request body' do
         stub = stub_request(:head, 'example.com').with( :body => 'woohoo' )
-        expect{ client.head( :path => '/', :body => 'woohoo' ) }.to raise_error( GiantClient::NotImplementedError )
+        expect{ client.head( :path => '/', :body => 'woohoo' ) }.to raise_error( GiantClient::Error::NotImplemented )
       end
     end
   end

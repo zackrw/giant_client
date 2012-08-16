@@ -6,7 +6,7 @@ class GiantClient
 
     def request(method, opts)
       if BODYLESS_METHODS.include?(method)
-        raise NotImplementedError unless opts[:body] == ''
+        raise GiantClient::Error::NotImplemented unless opts[:body] == ''
       end
       query = encode_query(opts[:query])
 
@@ -33,7 +33,7 @@ class GiantClient
       begin
         response = http.start {|http| http.request(request)}
       rescue Timeout::Error
-        raise TimeoutError, "the request timed out (timeout: #{opts[:timeout]}"
+        raise GiantClient::Error::Timeout, "the request timed out (timeout: #{opts[:timeout]}"
       end
 
       # make response object

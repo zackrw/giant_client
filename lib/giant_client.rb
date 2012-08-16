@@ -1,9 +1,8 @@
 require 'giant_client/response'
+require 'giant_client/error'
 
 class GiantClient
   BODYLESS_METHODS = [:get, :delete, :head]
-  NotImplementedError = Class.new(StandardError)
-  TimeoutError = Class.new(StandardError)
 
   attr_accessor :host, :ssl, :port
   attr_reader :adapter
