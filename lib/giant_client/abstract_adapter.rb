@@ -16,11 +16,20 @@ class GiantClient
     end
 
     def encode_query(query)
+      query = stringify_query(query)
+      query = prepend_question_mark(query) unless query == ''
+      query
+    end
+
+    def stringify_query(query)
       if Hash === query
         query = URI.encode_www_form(query)
       end
-      query = "?#{query}" unless query == ''
       query
+    end
+
+    def prepend_question_mark(str)
+      "?#{str}"
     end
 
     def normalize_header_hash(headers)

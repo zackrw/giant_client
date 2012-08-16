@@ -3,6 +3,7 @@
 Giant Client is a ruby library which exposes a simple and uniform API for
 using a variety of http clients. Advantages of Giant Client:
 * Clean, easy-to-use, cruftless API
+* Testing as simple as it gets with a built in test framework that uses the exact same API
 * Take advantage of 5+ http clients while only learning one API
 * Seamlessly swap between http clients with one line of configuration (rather than erasing all of your code)
 
@@ -139,6 +140,73 @@ Setting a timeout sets both the read timeout and the connect timeout.
     client.get('I', 'skipped', 'the', 'README') # ArgumentError
 
 *Note: this is true with initialize too*
+
+####Testing
+
+Testing is easier than ever if you use GiantClient. Just call `GiantClient.new :adapter => :mock` and GiantClient will stub out all your requests.
+When the adapter is set to `:mock` GiantClient stores all of your requests on a stack: `client.requests`.
+`last_request` is shorthand (or longhand, actually) for `requests[0]` Check it out.
+
+    describe 'Mock Adapter' do
+      let(:client){ GiantClient.new :host => 'example.com', :adapter => :mock }
+
+      context 'super simple request' do
+        before do
+          client.get('/')
+        end
+
+        it 'should record the url' do
+          client.last_request.url.should == 'http://example.com/'
+        end
+      end
+      context 'request with all options set' do
+        before do
+          opts = {
+            :ssl => true,
+            :port => 9292,
+            :path => '/hey/there',
+            :query => { 'howya' => 'doing' },
+            :headers => { 'Content-Type' => 'application/awesome' },
+            :body => 'test body',
+            :timeout => 27
+          }
+          client.get(opts)
+        end
+
+        it 'should record the (correct) url' do
+          url = 'https://example.com:9292/hey/there?howya=doing'
+          client.last_request.url.should == url
+        end
+
+        it 'should record the (correct) ssl' do
+          client.last_request.ssl.should == true
+        end
+        it 'should record the (correct) port' do
+          client.last_request.port.should == 9292
+        end
+        it 'should record the (correct) path' do
+          client.last_request.path.should == '/hey/there'
+        end
+        it 'should record the (correct) query' do
+          client.last_request.query.should == { 'howya' => 'doing' }
+        end
+        it 'should record the (correct) query_string' do
+          client.last_request.querystring.should == 'howya=doing'
+        end
+        it 'should record the (correct) headers' do
+          client.last_request.headers.should ==
+                                { 'Content-Type' => 'application/awesome' }
+        end
+        it 'should record the (correct) body' do
+          client.last_request.body.should == 'test body'
+        end
+        it 'should record the (correct) timeout' do
+          client.last_request.timeout.should == 27
+        end
+      end
+    end
+
+*For tests with multiple requests, visit spec/examples/mock_adapter_spec.rb*
 
 ## Contributing
 

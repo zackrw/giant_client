@@ -69,4 +69,21 @@ class GiantClient
     @client.__send__(method, opts)
   end
 
+  # for the mock adapter only
+  def last_request
+    if MockAdapter === @client
+      @client.last_request
+    else
+      raise ArgumentError, "wrong number of arguments (#{args.length} for 1..2)";
+    end
+  end
+
+  def requests
+    if MockAdapter === @client
+      @client.requests
+    else
+      raise ArgumentError, "wrong number of arguments (#{args.length} for 1..2)";
+    end
+  end
+
 end
