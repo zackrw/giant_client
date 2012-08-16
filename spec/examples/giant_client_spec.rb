@@ -81,6 +81,15 @@ describe 'GiantClient' do
         expect{ client.get( :path => '/', :body => 'hey yo' ) }.to raise_error( GiantClient::NotImplementedError )
       end
 
+      context 'timing out' do
+        let(:client) { GiantClient.new( :host => 'example.com', :adapter => adapter, :timeout => 1 ) }
+
+        it 'should raise a timeout error if there is a timeout' do
+          stub = stub_request(:get, 'example.com').to_timeout
+          expect{ client.get( :path => '/' ) }.to raise_error( GiantClient::TimeoutError )
+        end
+      end
+
       context 'ssl' do
         let(:client) { GiantClient.new( :host => 'example.com', :ssl => true, :adapter => adapter ) }
 
@@ -210,6 +219,80 @@ describe 'GiantClient' do
   describe 'Typhoeus' do
     it_behaves_like 'an adapter' do
       let(:adapter){ :typhoeus }
+    end
+  end
+
+
+  describe 'AbstractAdapter' do
+
+    let(:adapter){ GiantClient::AbstractAdapter.new }
+
+    describe '#normalize_header' do
+
+      it 'should not touch a header that is already title case' do
+        adapter.normalize_header('Content-Type').should == 'Content-Type'
+      end
+
+      it 'should convert a header to title case' do
+        adapter.normalize_header('content-type').should == 'Content-Type'
+      end
+
+      it 'should only capitalize the first letter of words' do
+        adapter.normalize_header('CONTENT-type').should == 'Content-Type'
+      end
+
+      it 'should work for one word' do
+        adapter.normalize_header('acCEPTS').should == 'Accepts'
+      end
+
+      it 'should downcase appropriately' do
+        adapter.normalize_header('CONTENT-LENGTH').should == 'Content-Length'
+      end
+
+      it 'should handle a another, similar situation' do
+        adapter.normalize_header('x-Forwarded-for').should == 'X-Forwarded-For'
+      end
+    end
+
+    describe '#encode_query' do
+
+      it 'should return empty string from empty hash' do
+        adapter.encode_query({}).should == ''
+      end
+
+      it 'should prefix string argument with ?' do
+        adapter.encode_query('parsnips').should == '?parsnips'
+      end
+
+      it 'should correctly convert hash to query string with ?' do
+        adapter.encode_query({ :tra => "lala", :ha => "za"} )
+                                      .should == '?tra=lala&ha=za'
+      end
+    end
+
+    describe '#url_from_opts' do
+      let(:opts){{
+        :path => '/', :host => 'example.com',
+        :ssl => false, :port => 80,
+        :query => {}, :body => '',
+        :headers => {}
+      }}
+
+      it 'should not have the correct url' do
+        adapter.url_from_opts(opts).should == "http://example.com/"
+      end
+
+      it 'should use ssl if we tell it to' do
+        opts[:ssl] = true
+        adapter.url_from_opts(opts)[0...8].should == "https://"
+      end
+
+      it 'should work with a custom port' do
+        opts[:ssl] = true
+        opts[:port] = 8080
+        adapter.url_from_opts(opts)[19...24].should == ":8080"
+      end
+
     end
   end
 

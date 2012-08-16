@@ -1,18 +1,19 @@
 require 'giant_client/abstract_adapter'
-require 'giant_client/gc_response'
 require 'net/http'
 
 class GiantClient
   class NetHttpAdapter < AbstractAdapter
 
     def request(method, opts)
-      if BodylessMethods.include?(method)
+      if BODYLESS_METHODS.include?(method)
         raise NotImplementedError unless opts[:body] == ''
       end
       query = encode_query(opts[:query])
 
       http = Net::HTTP.new( opts[:host], opts[:port] )
       http.use_ssl = opts[:ssl]
+      http.read_timeout = opts[:timeout]
+      http.open_timeout = opts[:timeout]
 
       request_class =
         case method
@@ -29,7 +30,11 @@ class GiantClient
         request.body = opts[:body]
       end
 
-      response = http.start {|http| http.request(request)}
+      begin
+        response = http.start {|http| http.request(request)}
+      rescue Timeout::Error
+        raise TimeoutError, "the request timed out (timeout: #{opts[:timeout]}"
+      end
 
       # make response object
       normalize_response(response)
@@ -39,10 +44,11 @@ class GiantClient
       status_code = response.code.to_i
       headers = {}
       response.each_header do |header, value|
-        headers[header.capitalize] = value
+        header = normalize_header(header)
+        headers[header] = value
       end
       body = response.body
-      GCResponse.new(status_code, headers, body)
+      Response.new(status_code, headers, body)
     end
 
   end

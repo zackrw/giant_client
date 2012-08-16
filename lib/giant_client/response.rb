@@ -1,5 +1,5 @@
 class GiantClient
-  class GCResponse
+  class Response
     attr_accessor :body, :headers, :status_code
 
     def initialize(status_code, headers, body)
@@ -7,5 +7,6 @@ class GiantClient
       @headers = headers
       @body = body
     end
+
   end
 end

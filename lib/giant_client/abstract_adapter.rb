@@ -16,12 +16,24 @@ class GiantClient
     end
 
     def encode_query(query)
-      case query
-      when Hash
+      if Hash === query
         query = URI.encode_www_form(query)
       end
       query = "?#{query}" unless query == ''
       query
+    end
+
+    def normalize_header_hash(headers)
+      normalized_headers = {}
+      headers.each do |header, value|
+        normalized = normalize_header(header)
+        normalized_headers[normalized] = value
+      end
+      normalized_headers
+    end
+
+    def normalize_header(header)
+      header.split('-').map{|h| h.capitalize}.join('-')
     end
 
     def get(opts)

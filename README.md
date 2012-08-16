@@ -37,6 +37,10 @@ Or install it yourself as:
 
     client = GiantClient.new(options)
 
+######Passing a symbol argument as the first argument to initialize is assumed to be the adapter
+######short hand
+    client = GiantClient.new :patron, :host => 'example.com'
+
 ####Adapters
 *There are currently five adapters supported. They use the libraries they are named after.*
     :net_http
@@ -109,6 +113,19 @@ In general, `status_code` is a number, `headers` is a Hash, and `body` is a Stri
     # way 2
     g_client.get(:path => '/', :port => 8080)
 
+######Timeouts
+In GiantClient timeouts can be configured on initialization or request by request. 
+If you just leave it alone, the default timeout is 30 seconds. This is roughly the average of the clients supported. 
+Setting a timeout sets both the read timeout and the connect timeout.
+*Setting a Timeout*
+    # on configuration
+    client = GiantClient.new( :adapter => :typhoeus, :timeout => 5 ) # five second timeout
+    client.get '/'                                                   # will raise a GiantClient::TimeoutError if it takes longer than 5 seconds.
+
+    # request specific timeout
+    client = GiantClient.new :typhoeus           # five second timeout
+    client.get '/', :timeout => 1                # will raise a GiantClient::TimeoutError if it takes longer than 1 second.
+
 ######Passing a string as the options will set path = to that string and all other options to their defaults
     client.get('/') # same as :path => '/'
 
@@ -120,6 +137,8 @@ In general, `status_code` is a number, `headers` is a Hash, and `body` is a Stri
 
 ######Passing more than 2 arguments or fewer than one argument will raise an ArgumentError
     client.get('I', 'skipped', 'the', 'README') # ArgumentError
+
+*Note: this is true with initialize too*
 
 ## Contributing
 
