@@ -249,6 +249,9 @@ As many as you want
                                      :foo        => 'bar'
                                    }
 
+    # in practice you'll usually just test a property at a time e.g.
+    client.last_response[:body].should == 'hey' # much cleaner
+
 
 *For tests with multiple requests / responses, visit spec/examples/mock_adapter_spec.rb*
 
