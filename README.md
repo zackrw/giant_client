@@ -144,7 +144,7 @@ Setting a timeout sets both the read timeout and the connect timeout.
 ####Testing
 
 Testing is easier than ever if you use GiantClient. Just call `GiantClient.new :adapter => :mock` and GiantClient will stub out all your requests.
-When the adapter is set to `:mock` GiantClient stores all of your requests on a stack: `client.requests`.
+When the adapter is set to `:mock` GiantClient stores all of your requests on a stack: `client.requests`. This is also true for responses.
 `last_request` is shorthand (or longhand, actually) for `requests[0]` Check it out.
 
     describe 'Mock Adapter' do
@@ -206,7 +206,51 @@ When the adapter is set to `:mock` GiantClient stores all of your requests on a 
       end
     end
 
-*For tests with multiple requests, visit spec/examples/mock_adapter_spec.rb*
+Giant Client creates a response hash for the mock requests. By default it is this:
+
+    {
+      :status_code => 200,
+      :headers     => {},
+      :body        => nil
+    }
+
+You can manipulate the response to a specific request with the `respond_with` method, which merges in your settings:
+    client.get('/').respond_with(:body => 'hey')
+    client.last_response.should == {
+                                     :status_code => 200,
+                                     :headers     => {},
+                                     :body        => 'hey'
+                                   }
+You can set arbitrary fields (although there usually isn't reason to)
+
+    client.get('/').respond_with(:headers => {}:body => 'hey')
+    client.last_response.should == {
+                                     :status_code => 200,
+                                     :headers     => {},
+                                     :body        => 'hey'
+                                   }
+
+As many as you want
+
+    client.get('/').respond_with(:headers => {
+                                                'Content-Type' => 'application/json',
+                                                'X-Powered-By' => 'Internet'
+                                             },
+                                             :body => 'hey',
+                                             :foo  => 'bar'
+                                )
+    client.last_response.should == {
+                                     :status_code => 200,
+                                     :headers     => {
+                                                        'Content-Type' => 'application/json',
+                                                        'X-Powered-By' => 'Internet'
+                                                     },
+                                     :body        => 'hey',
+                                     :foo        => 'bar'
+                                   }
+
+
+*For tests with multiple requests / responses, visit spec/examples/mock_adapter_spec.rb*
 
 ## Contributing
 

@@ -249,6 +249,22 @@ describe 'Mock Adapter' do
         :foo => 'bar'
       }
     end
+
+    it 'should work with multiple responses' do
+      client.get('/').respond_with(:body => 'me first')
+      client.get('/').respond_with(:body => 'after you')
+      client.last_response.should == {
+        :status_code => 200,
+        :headers => {},
+        :body => 'after you',
+      }
+
+      client.responses[1].should == {
+        :status_code => 200,
+        :headers => {},
+        :body => 'me first',
+      }
+    end
   end
 end
 
