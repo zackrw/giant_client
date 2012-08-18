@@ -24,6 +24,8 @@ class GiantClient
     def stringify_query(query)
       if Hash === query
         query = URI.encode_www_form(query)
+      elsif query.nil?
+        query = ''
       end
       query
     end

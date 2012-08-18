@@ -86,4 +86,20 @@ class GiantClient
     end
   end
 
+  def last_response
+    if MockAdapter === @client
+      @client.last_response
+    else
+      raise ArgumentError, "wrong number of arguments (#{args.length} for 1..2)";
+    end
+  end
+
+  def responses
+    if MockAdapter === @client
+      @client.responses
+    else
+      raise ArgumentError, "wrong number of arguments (#{args.length} for 1..2)";
+    end
+  end
+
 end

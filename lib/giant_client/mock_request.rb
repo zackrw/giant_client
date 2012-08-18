@@ -6,5 +6,6 @@ class GiantClient
     def raised_error?
       @raised_error
     end
+
   end
 end

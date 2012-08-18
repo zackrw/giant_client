@@ -154,4 +154,107 @@ describe 'Mock Adapter' do
       end
     end
   end
+
+  context 'setting responses' do
+    it 'should give the default response' do
+      client.get('/')
+      client.last_response.should == { :status_code => 200,
+                                       :headers => {},
+                                       :body => nil
+                                     }
+    end
+
+    it 'should give the specified status' do
+      client.get('/').respond_with(:status_code => 404)
+      client.last_response.should == { :status_code => 404,
+                                       :headers => {},
+                                       :body => nil
+                                     }
+    end
+
+    it 'should give the specified header' do
+      client.get('/').respond_with(:headers =>
+                       {'Content-Type' => 'application/octet-stream'})
+      client.last_response.should == {
+        :status_code => 200,
+        :headers =>
+             {'Content-Type' => 'application/octet-stream'},
+        :body => nil
+      }
+    end
+
+    it 'should give multiple headers' do
+      client.get('/').respond_with(:headers =>
+                   {'Content-Type' => 'application/octet-stream',
+                    'Accepts' => '*/*',
+                    'X-Powered-By' => 'The Internet'})
+      client.last_response.should == {
+        :status_code => 200,
+        :headers =>
+             {'Content-Type' => 'application/octet-stream',
+             'Accepts' => '*/*',
+             'X-Powered-By' => 'The Internet'},
+        :body => nil
+      }
+    end
+
+    it 'should give multiple headers and status' do
+      client.get('/').respond_with(:headers =>
+                   {'Content-Type' => 'application/octet-stream',
+                    'Accepts' => '*/*',
+                    'X-Powered-By' => 'The Internet'},
+                    :status_code => 123)
+      client.last_response.should == {
+        :status_code => 123,
+        :headers =>
+             {'Content-Type' => 'application/octet-stream',
+             'Accepts' => '*/*',
+             'X-Powered-By' => 'The Internet'},
+        :body => nil
+      }
+    end
+
+    it 'should give the body' do
+      client.get('/').respond_with(:body => 'hey')
+      client.last_response.should == {
+        :status_code => 200,
+        :headers => {},
+        :body => 'hey'
+      }
+    end
+
+    it 'should give all three' do
+      client.get('/').respond_with(:headers =>
+                   {'Content-Type' => 'application/octet-stream',
+                    'Accepts' => '*/*',
+                    'X-Powered-By' => 'The Internet'},
+                    :status_code => 123,
+                    :body => 'hey there')
+      client.last_response.should == {
+        :status_code => 123,
+        :headers =>
+             {'Content-Type' => 'application/octet-stream',
+             'Accepts' => '*/*',
+             'X-Powered-By' => 'The Internet'},
+        :body => 'hey there'
+      }
+    end
+
+    it 'should allow arbitrary fields' do
+      client.get('/').respond_with(:foo => 'bar')
+      client.last_response.should == {
+        :status_code => 200,
+        :headers => {},
+        :body => nil,
+        :foo => 'bar'
+      }
+    end
+  end
 end
+
+
+
+
+
+
+
