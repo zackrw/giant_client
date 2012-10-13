@@ -5,6 +5,7 @@ Gem::Specification.new do |s|
   s.version = GiantClient::VERSION
   s.authors = ["Zack Reneau-Wedeen", "Mat Brown"]
   s.email = "z.reneau.wedeen@gmail.com"
+  s.homepage = "https://github.com/xaq2892/giant_client"
   s.license = "MIT"
   s.summary = "Lightweight wrapper for major HTTP client libraries"
   s.description = <<DESC
